@@ -14,7 +14,18 @@ Implemented a real-time **Role-Based Matrix Access Control** mechanism in Jira D
   * **Database Property Prefix Handling:** Handled Jira's internal `jira.meta.*` database prefix discrepancy between UI-defined and API-defined user properties (`SalesLevel`).
   * **Bypassing `setFilter` Limitations:** Replaced `setFilter` (which throws `MissingMethodException` on system fields like `Assignee`) with sub-50ms **Live UI Server-Side Validation**.
   * **Multi-Role CSV Parsing & Loop Validation:** Supported multi-region managers (`HQ,Region1`) and iterative validation on Multi-User Picker fields prior to task-cloning Post-Functions.
+---
 
+## Featured Architecture: Enterprise Deep Clone & Multi-Assignee Post-Function
+
+### Overview
+Solved the **Anti-Pattern of Hardcoding Fields** during task creation by leveraging native Deep Copy mechanisms in Jira Data Center.
+
+* **File:** `DeepClone_MultiAssignee_PostFunction.groovy`
+* **Key Architectural Benefits:**
+  * **Dynamic Schema Adaptability:** Automatically propagates all system and custom fields (Priority, Components, custom attributes) without requiring script maintenance when screens change.
+  * **Scalability & Performance:** Executes purely within Jira's heap memory (`cloneIssue`), bypassing costly database select queries for individual fields.
+  * **Cluster-Ready Synchronization:** Utilizes `IssueIndexingService` to instantly sync newly cloned tasks across all Jira Data Center nodes, avoiding JQL visibility lag.
 ---
 
 ## مستند معماری: کنترل دسترسی ماتریسی در Jira Data Center
