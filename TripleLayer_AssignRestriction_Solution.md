@@ -1,9 +1,9 @@
-Markdown
 # Triple-Layer Restriction: "Assign to me" by Workflow Status
 
 This architecture enforces strict access control on the "Assign to me" action, restricting it to a specific workflow status. It uses a Defense-in-Depth approach across three Jira layers to prevent API and UI bypasses.
 
 ## 1. Backend Validation (ScriptRunner Behaviours)
+
 * **Target:** Server-Side Script on the `Assignee` field.
 * **Mechanism:** Blocks form submission and API calls if the issue is not in the allowed target status.
 
@@ -26,29 +26,38 @@ if (issue.getStatus().getId() != targetStatusId) {
 } else {
     assigneeField.clearError()
 }
-2. View Issue UI Sanitization (ScriptRunner Web Fragment)
-Location: atl.jira.view.issue.right.context
 
-Mechanism: Dynamically evaluates the issue context and hides the button in the standard issue view when outside the allowed status.
+```
 
-Condition Script:
+## 2. View Issue UI Sanitization (ScriptRunner Web Fragment)
 
-Groovy
+* **Location:** `atl.jira.view.issue.right.context`
+* **Mechanism:** Dynamically evaluates the issue context and hides the button in the standard issue view when outside the allowed status.
+
+**Condition Script:**
+
+```groovy
 issue.getProjectId().toString() == "PROJECT_ID" && 
 issue.getIssueTypeId() == "ISSUE_TYPE_ID" && 
 issue.getStatus().getId() != "STATUS_ID"
-Provider Script:
 
-HTML
+```
+
+**Provider Script:**
+
+```html
 <style>
     #assign-to-me, #assign-to-me-trigger, .assign-to-me-link { display: none !important; }
 </style>
-3. Agile Board DOM Observer (Announcement Banner)
-Target: Jira Announcement Banner (HTML/JS)
 
-Mechanism: Uses MutationObserver to monitor React/SPA DOM changes on Agile Boards (RapidBoard.jspa) and dynamically hides the assignment button based on REST API status checks, preventing client-side bypasses.
+```
 
-HTML
+## 3. Agile Board DOM Observer (Announcement Banner)
+
+* **Target:** Jira Announcement Banner (HTML/JS)
+* **Mechanism:** Uses `MutationObserver` to monitor React/SPA DOM changes on Agile Boards (`RapidBoard.jspa`) and dynamically hides the assignment button based on REST API status checks, preventing client-side bypasses.
+
+```html
 <script>
 AJS.$(document).ready(function() {
     function enforceAccountAssignHidden() {
@@ -107,3 +116,5 @@ AJS.$(document).ready(function() {
     setTimeout(enforceAccountAssignHidden, 800);
 });
 </script>
+
+```
